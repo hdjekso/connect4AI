@@ -122,7 +122,7 @@ class connect4():
 					spectating = False
 					break
 
-	def gameOver(self, j, player):
+	def gameOver(self, j, player): #only returns t/f, does not detect 
 		# Find extrema to consider
 		i = self.topPosition[j] + 1
 		minRowIndex = max(j - 3, 0)
