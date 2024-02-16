@@ -99,6 +99,8 @@ def weight(window, player, opp):
 		score += 8
 	elif pCount == 4: #connect 4 formed
 		score += inf
+	
+	print("player score: {score}")
 
 	#count number of opponent tiles and evaluate
 	oppCount = window.count(opp)
@@ -110,7 +112,8 @@ def weight(window, player, opp):
 		score -= 8
 	elif oppCount == 4: #connect 4 formed
 		score -= inf
-		
+	
+	print("total score: {score}")
 	return score
 
 #evaluation function
@@ -125,7 +128,7 @@ def eval(board, player, opp): #player: 1 or 2 #opp: 2 or 1 #board = env.board
 			score += weight(window, player, opp) #evaluate weight of window based on player tiles and opponent tiles in window
 
 	#vertical
-	for j in range(7): #iterate over all 7 cols
+	'''for j in range(7): #iterate over all 7 cols
 		curCol = board[:, j] #extract col
 		for k in range(3): #numrows - 3 = 3
 			window = curCol[k:k+4] #extract window of length 4 from current col
@@ -151,22 +154,31 @@ def eval(board, player, opp): #player: 1 or 2 #opp: 2 or 1 #board = env.board
 			for k in range(4): #traverse upwards to the right
 				window[k] = board[i-k][j+k]
 			
-			score += weight(window, player, opp)
+			score += weight(window, player, opp)'''
 
 	return score
 
 class minimaxAI(connect4Player):
 	def successor_state(self):
-		return 
+		pass
+	
+	def simulateMove(self, env: connect4, move: int, player: int):
+		env.board[env.topPosition[move]][move] = player #topPopsition[move] indicates row
+		env.topPosition[move] -= 1 #decrement row
 
-	def max_value(self, env, col):
+		return env
+
+	def max_value(self, env, col, depth):
 		bestMove = -1 #stores col index of best move
-		#env = deepcopy(env)
-		#env = simulate_move(env, col) #get board with current move applied
+
 		prevPlayer = self.opponent.position #get the player who made the move that caused the board to become its current state
-		if self.gameOver(col, prevPlayer):
-			return -1, bestMove #min won
+		if env.gameOver(col, prevPlayer):
+			return -inf, bestMove #min won
 		v = -inf
+
+		if depth == 0: #evaluate state
+			print("depth 0 reached, current function: max")
+			return eval(env.board, self.position, self.opponent.position)
 
 		#get possible next moves
 		possible = env.topPosition >= 0
@@ -179,21 +191,26 @@ class minimaxAI(connect4Player):
 			if p: indices.append(i)
 
 		for i in indices:
-			s = self.successor_state(env, i) #generate successor state given current board and desired move
-			curMax = self.min_value(s, i, bestMove) #the value max will get for visiting that child
+			env_copy = deepcopy(env)
+			s = self.simulateMove(env_copy, i, self.position) #generate successor state given current board and desired move
+			curMax = self.min_value(s, i, depth - 1, bestMove) #the value max will get for visiting that child
 			if curMax > v:
 				v = curMax
 				bestMove = i
 		
 		return v, bestMove
 	
-	def min_value(self, env, col, bestMove):
+	def min_value(self, env, col, depth, bestMove):
 		#env = deepcopy(env)
 		#env = simulate_move(env, col) #get board with current move applied
 		prevPlayer = self.opponent.position #get the player who made the move that caused the board to become its current state
-		if self.gameOver(col, prevPlayer):
-			return 1 #max player won
-		v = 0
+		if env.gameOver(col, prevPlayer):
+			return inf #max player won
+		v = inf
+
+		if depth == 0: #evaluate state
+			print("depth 0 reached, current function: min")
+			return eval(env.board, self.position, self.opponent.position)
 
 		#get possible next moves
 		possible = env.topPosition >= 0
@@ -205,16 +222,16 @@ class minimaxAI(connect4Player):
 			#return 0 #draw
 
 		for i in indices:
-			s = self.successor_state(env, i) #generate successor state given current board and next move
-			v = max(v, self.max_value(s))
+			env_copy = deepcopy(env)
+			s = self.simulateMove(env_copy, i, self.opponent.position) #generate successor state given current board and next move
+			v = max(v, self.max_value(s, i, depth - 1))
 		
 		return v
 
 
 	def play(self, env: connect4, move: list) -> None:
 		env = deepcopy(env)
-		v = -inf
-		v, bestMove = max(v, self.max_value(env, 0))
+		v, bestMove = self.max_value(env, 0, 5)
 		move[:] = bestMove
 
 class alphaBetaAI(connect4Player):

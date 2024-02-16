@@ -124,7 +124,8 @@ class connect4():
 
 	def gameOver(self, j, player): #only returns t/f, does not detect 
 		# Find extrema to consider
-		i = self.topPosition[j] + 1
+		#i = self.topPosition[j] + 1
+		i = self.topPosition[j]
 		minRowIndex = max(j - 3, 0)
 		maxRowIndex = min(j + 3, self.shape[1]-1)
 		maxColumnIndex = max(i - 3, 0)
