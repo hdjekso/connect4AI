@@ -92,6 +92,7 @@ class connect4():
 			self.draw_board()
 		if self.verbose:
 			print(self.board)
+			#time.sleep(2)
 		return move
 
 	def play(self):
@@ -100,6 +101,7 @@ class connect4():
 		player = self.turnPlayer.position
 		move = self.playTurn()
 		while not self.gameOver(move, player):
+			#print(f"game over check: {move}, {player}")
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					pygame.quit()
@@ -124,8 +126,8 @@ class connect4():
 
 	def gameOver(self, j, player): #only returns t/f, does not detect 
 		# Find extrema to consider
-		#i = self.topPosition[j] + 1
-		i = self.topPosition[j]
+		i = self.topPosition[j] + 1
+		#i = self.topPosition[j]
 		minRowIndex = max(j - 3, 0)
 		maxRowIndex = min(j + 3, self.shape[1]-1)
 		maxColumnIndex = max(i - 3, 0)
@@ -139,6 +141,7 @@ class connect4():
 		count = 0
 		for s in range(minRowIndex, maxRowIndex+1):
 			if self.board[i, s] == player:
+				#print(f"line 141: i = {i}, self.topPosition = {self.topPosition}")
 				count += 1
 			else:
 				count = 0

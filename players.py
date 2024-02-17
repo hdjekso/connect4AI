@@ -68,6 +68,7 @@ class randomAI(connect4Player):
 class stupidAI(connect4Player):
 
 	def play(self, env: connect4, move: list) -> None:
+		#print(f"game over check: {env.gameOver(move[0], self.opponent)}")
 		possible = env.topPosition >= 0
 		indices = []
 		for i, p in enumerate(possible):
@@ -89,78 +90,123 @@ def weight(window, player, opp):
 	score = 0
 
 	#count number of player tiles and evaluate
-	pCount = window.count(player)
-	emptyCount = window.count(0) #count number of empty tiles (used to check if connect 4 possible)
-	if pCount == 1 and emptyCount == 3: #1 player tile in window, and 3 empty: connect 4 possible
-		score += 1
-	elif pCount == 2 and emptyCount == 2:
+	pCount = np.count_nonzero(window == player)
+	#print(f"pCount: {pCount}")
+	emptyCount =np.count_nonzero(window == 0) #count number of empty tiles (used to check if connect 4 possible)
+	if pCount == 2 and emptyCount == 2:
 		score += 3
 	elif pCount == 3 and emptyCount == 1:
 		score += 8
 	elif pCount == 4: #connect 4 formed
 		score += inf
+		#return inf
 	
-	print("player score: {score}")
-
 	#count number of opponent tiles and evaluate
-	oppCount = window.count(opp)
-	if oppCount == 1 and emptyCount == 3: #1 player tile in window, and 3 empty: connect 4 possible
-		score -= 1
+	oppCount = np.count_nonzero(window == opp)
+	'''#print(f"oppCount: {oppCount}")
 	elif oppCount == 2 and emptyCount == 2:
 		score -= 3
 	elif oppCount == 3 and emptyCount == 1:
 		score -= 8
 	elif oppCount == 4: #connect 4 formed
+		score -= inf'''
+	if oppCount == 4: #connect 4 formed
+		#return -inf
+		score -= inf
+	elif oppCount == 3 and emptyCount == 1:
+		score -= 8
+	
+	return score
+
+def weight_2(window, player, opp):
+	score = 0
+	#print(f"in weight function: {window}")
+	#count number of player tiles and evaluate
+	pCount = np.count_nonzero(window == player)
+	#print(f"pCount: {pCount}")
+	emptyCount =np.count_nonzero(window == 0) #count number of empty tiles (used to check if connect 4 possible)
+	#print(f"emptyCount: {emptyCount}")
+	if pCount == 2 and emptyCount == 2:
+		#print("pCount == 2 and emptyCount == 2")
+		score += 4
+	elif pCount == 3 and emptyCount == 1:
+		#print("pCount == 3 and emptyCount == 1")
+		score += 8
+	elif pCount == 4: #connect 4 formed
+		#print("pCount == 4")
+		score += inf
+		#return inf
+	
+	#count number of opponent tiles and evaluate
+	oppCount = np.count_nonzero(window == opp)
+	#print(f"oppCount: {oppCount}")
+	if oppCount == 2 and emptyCount == 2:
+		score -= 4
+	elif oppCount == 3 and emptyCount == 1:
+		score -= 8
+	elif oppCount == 4: #connect 4 formed
 		score -= inf
 	
-	print("total score: {score}")
+	#print(f"score: {score}")
+	#print("")
 	return score
 
 #evaluation function
 def eval(board, player, opp): #player: 1 or 2 #opp: 2 or 1 #board = env.board
 	score = 0
 
+	#center tiles
+	center_array = board[:, 3]
+	center_count = np.count_nonzero(center_array == player)
+	score += center_count * 3
+
 	#calculate score of horizontal moves
 	for i in range(6): #iterate over all 6 rows
 		curRow = board[i, :] #extract row
 		for k in range(4): #numcols - 3 = 4
 			window = curRow[k:k+4] #extract window of length 4 from current row
-			score += weight(window, player, opp) #evaluate weight of window based on player tiles and opponent tiles in window
+			score += weight_2(window, player, opp) #evaluate weight of window based on player tiles and opponent tiles in window
 
 	#vertical
-	'''for j in range(7): #iterate over all 7 cols
+	for j in range(7): #iterate over all 7 cols
 		curCol = board[:, j] #extract col
 		for k in range(3): #numrows - 3 = 3
 			window = curCol[k:k+4] #extract window of length 4 from current col
-			score += weight(window, player, opp) #evaluate weight of window based on player tiles and opponent tiles in window
+			score += weight_2(window, player, opp) #evaluate weight of window based on player tiles and opponent tiles in window
 
 	#left diagonal
+	#board_copy = board.copy()
 	for i in range(3): #iterate over rows: 6 - 3 = 3
 		for j in range(4): #iterate over cols: 7 - 3 = 4
 
 			#create singular window
-			window = [0]*4
+			window = np.zeros(4)
+			#board_copy = board.copy()
 			for k in range(4): #traverse downwards to the right
 				window[k] = board[i+k][j+k] 
+				#board_copy[i+k][j+k] = '999'
 			
-			score += weight(window, player, opp)
-	
+			#print(board_copy)
+			score += weight_2(window, player, opp)
+		
 	#right diagonal
+	#board_copy = board
 	for i in range(5, 2, -1): #iterate over rows (start from row 6, stop at row 4 inclusive)
 		for j in range(4): #iterate over cols: 7 - 3 = 4
 
 			#create singular window
-			window = [0]*4
+			window = np.zeros(4)
+			#board_copy = board.copy()
 			for k in range(4): #traverse upwards to the right
 				window[k] = board[i-k][j+k]
+				#board_copy[i-k][j+k] = '999'
 			
-			score += weight(window, player, opp)'''
+			score += weight_2(window, player, opp)
+			#print(board_copy)
 
 	return score
 
 class minimaxAI(connect4Player):
-	def successor_state(self):
-		pass
 	
 	def simulateMove(self, env: connect4, move: int, player: int):
 		env.board[env.topPosition[move]][move] = player #topPopsition[move] indicates row
@@ -168,17 +214,17 @@ class minimaxAI(connect4Player):
 
 		return env
 
-	def max_value(self, env, col, depth):
+	def max_value(self, env, col, depth, dummyBestMove):
 		bestMove = -1 #stores col index of best move
 
+		#gameover check
 		prevPlayer = self.opponent.position #get the player who made the move that caused the board to become its current state
-		if env.gameOver(col, prevPlayer):
-			return -inf, bestMove #min won
-		v = -inf
 
-		if depth == 0: #evaluate state
-			print("depth 0 reached, current function: max")
-			return eval(env.board, self.position, self.opponent.position)
+		if col != -1: #this is the not the first/ second move
+			if env.gameOver(col, prevPlayer) or depth == 0:
+				return eval(env.board, self.position, self.opponent.position), dummyBestMove
+		
+		v = -inf
 
 		#get possible next moves
 		possible = env.topPosition >= 0
@@ -186,53 +232,59 @@ class minimaxAI(connect4Player):
 
 		#if len(indices) == 0: #no more possible moves
 			#return 0, bestMove  #draw
-
 		for i, p in enumerate(possible):
 			if p: indices.append(i)
 
+		#iterate over successor states
 		for i in indices:
-			env_copy = deepcopy(env)
-			s = self.simulateMove(env_copy, i, self.position) #generate successor state given current board and desired move
-			curMax = self.min_value(s, i, depth - 1, bestMove) #the value max will get for visiting that child
+			s = deepcopy(env)
+			self.simulateMove(s, i, self.position) #generate successor state given current board and desired move
+			curMax = self.min_value(s, i, depth - 1, dummyBestMove)[0] #the value max will get for visiting that child
 			if curMax > v:
 				v = curMax
 				bestMove = i
 		
+		#print(f"v: {v}, best move: {bestMove}")
 		return v, bestMove
 	
-	def min_value(self, env, col, depth, bestMove):
-		#env = deepcopy(env)
-		#env = simulate_move(env, col) #get board with current move applied
+	def min_value(self, env, col, depth, dummyBestMove):
+		#game over check
 		prevPlayer = self.opponent.position #get the player who made the move that caused the board to become its current state
-		if env.gameOver(col, prevPlayer):
-			return inf #max player won
+		if env.gameOver(col, prevPlayer) or depth == 0:
+			return eval(env.board, self.position, self.opponent.position), dummyBestMove
 		v = inf
-
-		if depth == 0: #evaluate state
-			print("depth 0 reached, current function: min")
-			return eval(env.board, self.position, self.opponent.position)
 
 		#get possible next moves
 		possible = env.topPosition >= 0
 		indices = []
 		for i, p in enumerate(possible):
 			if p: indices.append(i)
-
 		#if len(indices) == 0:
 			#return 0 #draw
 
+		#iterate over successor states
 		for i in indices:
-			env_copy = deepcopy(env)
-			s = self.simulateMove(env_copy, i, self.opponent.position) #generate successor state given current board and next move
-			v = max(v, self.max_value(s, i, depth - 1))
+			s = deepcopy(env)
+			self.simulateMove(s, i, self.opponent.position) #generate successor state given current board and next move
+			curMin = self.max_value(s, i, depth - 1, dummyBestMove)[0]
+			if curMin < v:
+				v = curMin
 		
-		return v
+		return v, dummyBestMove
 
 
 	def play(self, env: connect4, move: list) -> None:
-		env = deepcopy(env)
-		v, bestMove = self.max_value(env, 0, 5)
-		move[:] = bestMove
+		#get the column index of the first move played: if AI is p2, this will return the index p1's first move. if AI is p1, this will return 0.
+		'''if self.position == 1:
+			firstMoveIndex = np.argmin(env.topPosition)
+		else:
+			firstMoveIndex = -1'''
+		print(f"player: {self.position}")
+		print(f"opponent: {self.opponent.position}")
+		env_copy = deepcopy(env)
+		bestMove = self.max_value(env_copy, -1, 4, -1)[1]
+		#print(f"best move obtained: {bestMove}")
+		move[0] = bestMove
 
 class alphaBetaAI(connect4Player):
 
