@@ -87,7 +87,7 @@ class stupidAI(connect4Player):
 		else:
 			move[:] = [0]
 
-'''def weight(window, player, opp):
+def weight(window, player, opp):
 	score = 0
 
 	#count number of player tiles and evaluate
@@ -104,15 +104,20 @@ class stupidAI(connect4Player):
 	
 	#count number of opponent tiles and evaluate
 	oppCount = np.count_nonzero(window == opp)
-	#print(f"oppCount: {oppCount}")
-	if oppCount == 2 and emptyCount == 2:
+	'''#print(f"oppCount: {oppCount}")
+	elif oppCount == 2 and emptyCount == 2:
 		score -= 3
 	elif oppCount == 3 and emptyCount == 1:
 		score -= 8
 	elif oppCount == 4: #connect 4 formed
+		score -= inf'''
+	if oppCount == 4: #connect 4 formed
+		#return -inf
 		score -= inf
+	elif oppCount == 3 and emptyCount == 1:
+		score -= 8
 	
-	return score'''
+	return score
 
 def weight_2(window, player, opp):
 	score = 0
@@ -275,33 +280,17 @@ class minimaxAI(connect4Player):
 
 		#runtime = timeit.timeit(lambda: self.max_value(env_copy, -1, 4, -1), number=1)
 		#print(f"Runtime: {runtime} seconds")
-		
-		if np.min(env_copy.topPosition) == 5: #we are making the first move, hardcode center col
-			#print("first move is ours")
-			move[0] = 3
+
+		print(env_copy.topPosition)
+		if np.min(env_copy.topPosition) == 5: #we are making the first move
+			print("first move is ours")
+			move[0] = bestMove
 		else:
 			bestMove = self.max_value(env_copy, -1, 4, -1)[1]
 			#print(f"best move obtained: {bestMove}")
 			move[0] = bestMove
 
 class alphaBetaAI(connect4Player):
-	def difference_from_center(self, element):
-		return abs(element - 3)
-
-	def successor(self, indices):
-		sortedIndices = sorted(indices, key=self.difference_from_center)
-
-		return sortedIndices
-	
-	def difference_from_index(self, element, lastMove):
-		return abs(element - lastMove)
-
-	def successor2(self, indices, lastMove):
-		def difference_from_index(element):
-			return abs(element - lastMove)
-		sortedIndices = sorted(indices, key=difference_from_index)
-
-		return sortedIndices
 
 	def simulateMove(self, env: connect4, move: int, player: int):
 		env.board[env.topPosition[move]][move] = player #topPopsition[move] indicates row
@@ -326,15 +315,11 @@ class alphaBetaAI(connect4Player):
 		for i, p in enumerate(possible):
 			if p: indices.append(i)
 		
-		#print(f"og indices: {indices}, last move: {col}")
-		orderedIndices = self.successor(indices) #order the current state's children for most amount of pruning
-		orderedIndices2 = self.successor2(indices, col) 
-		#print(f"ordered indices2: {orderedIndices2}")
-		#indices.reverse()
-
+		#if len(indices) == 0: #no more possible moves
+			#return 0, bestMove  #draw
 
 		#iterate over successor states
-		for i in orderedIndices2:
+		for i in indices:
 			s = deepcopy(env)
 			self.simulateMove(s, i, self.position) #generate successor state given current board and desired move
 			curMax = self.min_value(s, i, depth - 1, dummyBestMove, alpha, beta)[0] #the value max will get for visiting that child
@@ -345,6 +330,7 @@ class alphaBetaAI(connect4Player):
 				return v, bestMove
 			alpha = max(alpha, v)
 		
+		#print(f"v: {v}, best move: {bestMove}")
 		return v, bestMove
 	
 	def min_value(self, env, col, depth, dummyBestMove, alpha, beta):
@@ -362,14 +348,8 @@ class alphaBetaAI(connect4Player):
 		#if len(indices) == 0:
 			#return 0 #draw
 
-		#print(f"og indices: {indices}, last move: {col}")
-		orderedIndices = self.successor(indices) #order the current state's children for most amount of pruning
-		orderedIndices2 = self.successor2(indices, col)
-		#print(f"ordered indices2: {orderedIndices2}")
-		#indices.reverse()
-
 		#iterate over successor states
-		for i in orderedIndices2:
+		for i in indices:
 			s = deepcopy(env)
 			self.simulateMove(s, i, self.opponent.position) #generate successor state given current board and next move
 			curMin = self.max_value(s, i, depth - 1, dummyBestMove, alpha, beta)[0]
@@ -382,6 +362,8 @@ class alphaBetaAI(connect4Player):
 		return v, dummyBestMove
 
 	def play(self, env: connect4, move: list) -> None:
+		#print(f"player: {self.position}")
+		#print(f"opponent: {self.opponent.position}")
 		env_copy = deepcopy(env)
 
 		#runtime = timeit.timeit(lambda: self.max_value(env_copy, -1, 4, -1, -inf, inf), number=1)
