@@ -137,9 +137,9 @@ def weight(window, player, opp):
 	oppCount = np.count_nonzero(window == opp)
 	#print(f"oppCount: {oppCount}")
 	if oppCount == 2 and emptyCount == 2:
-		score -= 4
+		score -= 6
 	elif oppCount == 3 and emptyCount == 1:
-		score -= 8
+		score -= 12
 	elif oppCount == 4: #connect 4 formed
 		score -= inf
 	
@@ -387,37 +387,6 @@ def eval2(board, player, opp): #player: 1 or 2 #opp: 2 or 1 #board = env.board
 	for diagonal in right_diagonals:
 		score += faster_weight2(diagonal, player, opp)
 
-	
-	#left diagonal
-	#board_copy = board.copy()
-	'''for i in range(3): #iterate over rows: 6 - 3 = 3
-		for j in range(4): #iterate over cols: 7 - 3 = 4
-
-			#create singular window
-			window = np.zeros(4)
-			#board_copy = board.copy()
-			for k in range(4): #traverse downwards to the right
-				window[k] = board[i+k][j+k] 
-				#board_copy[i+k][j+k] = '999'
-			
-			#print(board_copy)
-			score += faster_weight2(window, player, opp)
-		
-	#right diagonal
-	#board_copy = board
-	for i in range(5, 2, -1): #iterate over rows (start from row 6, stop at row 4 inclusive)
-		for j in range(4): #iterate over cols: 7 - 3 = 4
-
-			#create singular window
-			window = np.zeros(4)
-			#board_copy = board.copy()
-			for k in range(4): #traverse upwards to the right
-				window[k] = board[i-k][j+k]
-				#board_copy[i-k][j+k] = '999'
-			
-			score += faster_weight2(window, player, opp)
-			#print(board_copy)'''
-
 	return score
 
 class minimaxAI(connect4Player):
@@ -599,14 +568,15 @@ class alphaBetaAI(connect4Player):
 	def play(self, env: connect4, move: list) -> None:
 		env_copy = deepcopy(env)
 
-		runtime = timeit.timeit(lambda: self.max_value(env_copy, -1, 4, -1, -inf, inf), number=1)
-		print(f"Runtime: {runtime} seconds")
+		#runtime = timeit.timeit(lambda: self.max_value(env_copy, -1, 3, -1, -inf, inf), number=1)
+		#print(f"Runtime: {runtime} seconds")
 		
-		if np.min(env_copy.topPosition) == 5: #we are making the first move, hardcode center col
+		#if np.min(env_copy.topPosition) == 5: #we are making the first move, hardcode center col
+		if env_copy.topPosition[3] == 5: #hardcode center col if it hasn't been played yet
 			#print("first move is ours")
 			move[0] = 3
 		else:
-			bestMove = self.max_value(env_copy, -1, 4, -1, -inf, inf)[1]
+			bestMove = self.max_value(env_copy, -1, 3, -1, -inf, inf)[1]
 			#print(f"best move obtained: {bestMove}")
 			move[0] = bestMove
 
@@ -699,8 +669,8 @@ class alphaBetaAI2(connect4Player):
 	def play(self, env: connect4, move: list) -> None:
 		env_copy = deepcopy(env)
 
-		runtime = timeit.timeit(lambda: self.max_value(env_copy, -1, 4, -1, -inf, inf), number=1)
-		print(f"Runtime: {runtime} seconds")
+		#runtime = timeit.timeit(lambda: self.max_value(env_copy, -1, 3, -1, -inf, inf), number=1)
+		#print(f"Runtime: {runtime} seconds")
 		
 		if np.min(env_copy.topPosition) == 5: #we are making the first move, hardcode center col
 			#print("first move is ours")
