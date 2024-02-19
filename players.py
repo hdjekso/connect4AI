@@ -114,7 +114,7 @@ class stupidAI(connect4Player):
 	
 	return score'''
 
-def weight_2(window, player, opp):
+def weight(window, player, opp):
 	score = 0
 	#print(f"in weight function: {window}")
 	#count number of player tiles and evaluate
@@ -161,14 +161,14 @@ def eval(board, player, opp): #player: 1 or 2 #opp: 2 or 1 #board = env.board
 		curRow = board[i, :] #extract row
 		for k in range(4): #numcols - 3 = 4
 			window = curRow[k:k+4] #extract window of length 4 from current row
-			score += weight_2(window, player, opp) #evaluate weight of window based on player tiles and opponent tiles in window
+			score += weight(window, player, opp) #evaluate weight of window based on player tiles and opponent tiles in window
 
 	#vertical
 	for j in range(7): #iterate over all 7 cols
 		curCol = board[:, j] #extract col
 		for k in range(3): #numrows - 3 = 3
 			window = curCol[k:k+4] #extract window of length 4 from current col
-			score += weight_2(window, player, opp) #evaluate weight of window based on player tiles and opponent tiles in window
+			score += weight(window, player, opp) #evaluate weight of window based on player tiles and opponent tiles in window
 
 	#left diagonal
 	#board_copy = board.copy()
@@ -183,7 +183,7 @@ def eval(board, player, opp): #player: 1 or 2 #opp: 2 or 1 #board = env.board
 				#board_copy[i+k][j+k] = '999'
 			
 			#print(board_copy)
-			score += weight_2(window, player, opp)
+			score += weight(window, player, opp)
 		
 	#right diagonal
 	#board_copy = board
@@ -197,8 +197,226 @@ def eval(board, player, opp): #player: 1 or 2 #opp: 2 or 1 #board = env.board
 				window[k] = board[i-k][j+k]
 				#board_copy[i-k][j+k] = '999'
 			
-			score += weight_2(window, player, opp)
+			score += weight(window, player, opp)
 			#print(board_copy)
+
+	return score
+
+def weight2(window, player, opp):
+	score = 0
+	#gameover check, look for 4 consecutive player or opp tiles
+	gameOverScore = 0
+	for tile in window:
+		if tile == 0:
+			gameOverScore = 0
+		elif tile == player:
+			gameOverScore += 1
+		else:
+			gameOverScore -= 1
+	
+	if gameOverScore == 4:
+		return inf #win
+	elif gameOverScore == -4:
+		return -inf
+
+	#count player score
+	playerConsec = 0
+	emptyConsec = 0
+	for tile in window:
+		if tile == 0:
+			emptyConsec += 1
+		elif tile == player:
+			playerConsec += 1
+		else: #opponent tile found
+			if playerConsec == 2 and emptyConsec >= 2:
+				#print("pCount == 2 and emptyCount == 2")
+				score += 4
+			elif playerConsec >= 3 and emptyConsec >= 1:
+				#print("pCount == 3 and emptyCount == 1")
+				score += 8
+			playerConsec = 0 #reset
+			emptyConsec = 0 #reset
+	
+	#count opp score
+	oppConsec = 0
+	emptyConsec = 0
+	for tile in window:
+		if tile == 0:
+			emptyConsec += 1
+		elif tile == oppConsec:
+			oppConsec += 1
+		else: #player tile found
+			print(f"oppConsec = {oppConsec}, emptyConsec = {emptyConsec}")
+			if oppConsec == 2 and emptyConsec >= 2:
+				#print("pCount == 2 and emptyCount == 2")
+				score -= 4
+			elif oppConsec >= 3 and emptyConsec >= 1:
+				#print("pCount == 3 and emptyCount == 1")
+				score -= 8
+			oppConsec = 0 #reset
+			emptyConsec = 0 #reset
+	
+	return score
+
+def og_weight2(window, player, opp):
+	score = 0
+	#gameover check, look for 4 consecutive player or opp tiles
+	gameOverScore = 0
+	for tile in window:
+		if tile == 0:
+			gameOverScore = 0
+		elif tile == player:
+			gameOverScore += 1
+		else:
+			gameOverScore -= 1
+		if gameOverScore == 4:
+			return inf #win
+		elif gameOverScore == -4:
+			return -inf
+	#count player score
+	playerConsec = 0
+	emptyConsec = 0
+	for tile in window:
+		if tile == 0:
+			emptyConsec += 1
+		elif tile == player:
+			playerConsec += 1
+		else: #opponent tile found
+
+			#update score if needed
+			if playerConsec == 2 and emptyConsec >= 2:
+				score += 4
+			elif playerConsec >= 3 and emptyConsec >= 1:
+				score += 8
+			playerConsec = 0 #reset
+			emptyConsec = 0 #reset
+	
+	#count opp score
+	oppConsec = 0
+	emptyConsec = 0
+	for tile in window:
+		if tile == 0:
+			emptyConsec += 1
+		elif tile == opp:
+			oppConsec += 1
+		else: #player tile found
+			#update score if needed
+			#print(f"oppConsec = {oppConsec}, emptyConsec = {emptyConsec}")
+			if oppConsec == 2 and emptyConsec >= 2:
+				#print("pCount == 2 and emptyCount == 2")
+				score -= 4
+			elif oppConsec >= 3 and emptyConsec >= 1:
+				#print("pCount == 3 and emptyCount == 1")
+				score -= 8
+			oppConsec = 0 #reset
+			emptyConsec = 0 #reset
+	
+	return score
+
+def faster_weight2(window, player, opp):
+	score = 0
+	gameOverScore = 0
+	for tile in window:
+		if tile == 0:
+			gameOverScore = 0
+		elif tile == player:
+			gameOverScore = max(1, gameOverScore + 1)
+		else:
+			gameOverScore  = min(-1, gameOverScore - 1)
+		if gameOverScore == 4:
+			("score: inf")
+			return inf #win
+		elif gameOverScore == -4:
+			("score: -inf")
+			return -inf
+	
+	player_consec, opp_consec, empty_consec = 0, 0, 0
+	prevTile = -1
+	
+	for tile in window:
+		if tile == 0: #empty tile
+			empty_consec += 1
+			prevTile = 0
+		elif tile == player: #player tile 
+			player_consec += 1
+			if prevTile == opp:
+				if opp_consec == 2 and empty_consec >= 2:
+					score -= 4
+				elif opp_consec >= 3 and empty_consec >= 1:
+					score -= 8
+				empty_consec = 0
+			opp_consec = 0
+			prevTile = player
+		else: #opp tile
+			opp_consec += 1
+			if prevTile == player:
+				if player_consec == 2 and empty_consec >= 2:
+					score += 4
+				elif player_consec >= 3 and empty_consec >= 1:
+					score += 8
+				empty_consec = 0
+			player_consec = 0
+			prevTile = opp
+	
+	#print(f"score: {score}")
+	return score
+
+def eval2(board, player, opp): #player: 1 or 2 #opp: 2 or 1 #board = env.board
+	score = 0
+
+	#center tiles
+	center_array = board[:, 3]
+	center_count = np.count_nonzero(center_array == player)
+	score += center_count * 3
+
+	#calculate score of horizontal moves
+	for i in range(6): #iterate over all 6 rows
+		curRow = board[i, :] #extract row
+		score += faster_weight2(curRow, player, opp) #pass entire row in for eval
+
+	#vertical
+	for j in range(7): #iterate over all 7 cols
+		curCol = board[:, j] #extract col
+		score += faster_weight2(curCol, player, opp) #evaluate weight of window based on player tiles and opponent tiles in window
+
+	#diagonals
+	left_diagonals = [board.diagonal(offset=i) for i in range(-board.shape[0]+1, board.shape[1]) if len(board.diagonal(offset=i)) >= 4]
+	for diagonal in left_diagonals:
+		score += faster_weight2(diagonal, player, opp)
+	right_diagonals = [board[:, ::-1].diagonal(offset=i) for i in range(-board.shape[0] + 1, board.shape[1]) if len(board.diagonal(offset=i)) >= 4]
+	for diagonal in right_diagonals:
+		score += faster_weight2(diagonal, player, opp)
+
+	
+	#left diagonal
+	#board_copy = board.copy()
+	'''for i in range(3): #iterate over rows: 6 - 3 = 3
+		for j in range(4): #iterate over cols: 7 - 3 = 4
+
+			#create singular window
+			window = np.zeros(4)
+			#board_copy = board.copy()
+			for k in range(4): #traverse downwards to the right
+				window[k] = board[i+k][j+k] 
+				#board_copy[i+k][j+k] = '999'
+			
+			#print(board_copy)
+			score += faster_weight2(window, player, opp)
+		
+	#right diagonal
+	#board_copy = board
+	for i in range(5, 2, -1): #iterate over rows (start from row 6, stop at row 4 inclusive)
+		for j in range(4): #iterate over cols: 7 - 3 = 4
+
+			#create singular window
+			window = np.zeros(4)
+			#board_copy = board.copy()
+			for k in range(4): #traverse upwards to the right
+				window[k] = board[i-k][j+k]
+				#board_copy[i-k][j+k] = '999'
+			
+			score += faster_weight2(window, player, opp)
+			#print(board_copy)'''
 
 	return score
 
@@ -292,9 +510,6 @@ class alphaBetaAI(connect4Player):
 		sortedIndices = sorted(indices, key=self.difference_from_center)
 
 		return sortedIndices
-	
-	def difference_from_index(self, element, lastMove):
-		return abs(element - lastMove)
 
 	def successor2(self, indices, lastMove):
 		def difference_from_index(element):
@@ -327,7 +542,7 @@ class alphaBetaAI(connect4Player):
 			if p: indices.append(i)
 		
 		#print(f"og indices: {indices}, last move: {col}")
-		orderedIndices = self.successor(indices) #order the current state's children for most amount of pruning
+		#orderedIndices = self.successor(indices) #order the current state's children for most amount of pruning
 		orderedIndices2 = self.successor2(indices, col) 
 		#print(f"ordered indices2: {orderedIndices2}")
 		#indices.reverse()
@@ -363,7 +578,7 @@ class alphaBetaAI(connect4Player):
 			#return 0 #draw
 
 		#print(f"og indices: {indices}, last move: {col}")
-		orderedIndices = self.successor(indices) #order the current state's children for most amount of pruning
+		#orderedIndices = self.successor(indices) #order the current state's children for most amount of pruning
 		orderedIndices2 = self.successor2(indices, col)
 		#print(f"ordered indices2: {orderedIndices2}")
 		#indices.reverse()
@@ -384,8 +599,8 @@ class alphaBetaAI(connect4Player):
 	def play(self, env: connect4, move: list) -> None:
 		env_copy = deepcopy(env)
 
-		#runtime = timeit.timeit(lambda: self.max_value(env_copy, -1, 4, -1, -inf, inf), number=1)
-		#print(f"Runtime: {runtime} seconds")
+		runtime = timeit.timeit(lambda: self.max_value(env_copy, -1, 4, -1, -inf, inf), number=1)
+		print(f"Runtime: {runtime} seconds")
 		
 		if np.min(env_copy.topPosition) == 5: #we are making the first move, hardcode center col
 			#print("first move is ours")
@@ -395,6 +610,105 @@ class alphaBetaAI(connect4Player):
 			#print(f"best move obtained: {bestMove}")
 			move[0] = bestMove
 
+class alphaBetaAI2(connect4Player):
+
+	def successor2(self, indices, lastMove):
+		def difference_from_index(element):
+			return abs(element - lastMove)
+		sortedIndices = sorted(indices, key=difference_from_index)
+
+		return sortedIndices
+
+	def simulateMove(self, env: connect4, move: int, player: int):
+		env.board[env.topPosition[move]][move] = player #topPopsition[move] indicates row
+		env.topPosition[move] -= 1 #decrement row
+
+		return env
+
+	def max_value(self, env, col, depth, dummyBestMove, alpha, beta):
+		bestMove = -1 #stores col index of best move
+
+		#gameover check
+		prevPlayer = self.opponent.position #get the player who made the move that caused the board to become its current state
+		if col != -1: #this is the not the first/ second move, check for gameover
+			if env.gameOver(col, prevPlayer) or depth == 0:
+				return eval2(env.board, self.position, self.opponent.position), dummyBestMove
+		
+		v = -inf
+
+		#get possible next moves
+		possible = env.topPosition >= 0
+		indices = []
+		for i, p in enumerate(possible):
+			if p: indices.append(i)
+		
+		#print(f"og indices: {indices}, last move: {col}")
+		#orderedIndices = self.successor(indices) #order the current state's children for most amount of pruning
+		orderedIndices2 = self.successor2(indices, col) 
+		#print(f"ordered indices2: {orderedIndices2}")
+		#indices.reverse()
+
+		#iterate over successor states
+		for i in orderedIndices2:
+			s = deepcopy(env)
+			self.simulateMove(s, i, self.position) #generate successor state given current board and desired move
+			curMax = self.min_value(s, i, depth - 1, dummyBestMove, alpha, beta)[0] #the value max will get for visiting that child
+			if curMax > v:
+				v = curMax
+				bestMove = i
+			if v >= beta:
+				return v, bestMove
+			alpha = max(alpha, v)
+		
+		return v, bestMove
+	
+	def min_value(self, env, col, depth, dummyBestMove, alpha, beta):
+		#game over check
+		prevPlayer = self.opponent.position #get the player who made the move that caused the board to become its current state
+		if env.gameOver(col, prevPlayer) or depth == 0:
+			return eval2(env.board, self.position, self.opponent.position), dummyBestMove
+		v = inf
+
+		#get possible next moves
+		possible = env.topPosition >= 0
+		indices = []
+		for i, p in enumerate(possible):
+			if p: indices.append(i)
+		#if len(indices) == 0:
+			#return 0 #draw
+
+		#print(f"og indices: {indices}, last move: {col}")
+		#orderedIndices = self.successor(indices) #order the current state's children for most amount of pruning
+		orderedIndices2 = self.successor2(indices, col)
+		#print(f"ordered indices2: {orderedIndices2}")
+		#indices.reverse()
+
+		#iterate over successor states
+		for i in orderedIndices2:
+			s = deepcopy(env)
+			self.simulateMove(s, i, self.opponent.position) #generate successor state given current board and next move
+			curMin = self.max_value(s, i, depth - 1, dummyBestMove, alpha, beta)[0]
+			if curMin < v:
+				v = curMin
+			if v <= alpha:
+				return v, dummyBestMove
+			beta = min(beta, v)
+		
+		return v, dummyBestMove
+
+	def play(self, env: connect4, move: list) -> None:
+		env_copy = deepcopy(env)
+
+		runtime = timeit.timeit(lambda: self.max_value(env_copy, -1, 4, -1, -inf, inf), number=1)
+		print(f"Runtime: {runtime} seconds")
+		
+		if np.min(env_copy.topPosition) == 5: #we are making the first move, hardcode center col
+			#print("first move is ours")
+			move[0] = 3
+		else:
+			bestMove = self.max_value(env_copy, -1, 4, -1, -inf, inf)[1]
+			#print(f"best move obtained: {bestMove}")
+			move[0] = bestMove
 
 SQUARESIZE = 100
 BLUE = (0,0,255)
