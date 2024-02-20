@@ -9,6 +9,7 @@ from thread import KillableThread, thread_with_exception, thread_with_trace
 import multiprocessing
 import signal
 from copy import deepcopy
+import timeit
 
 import threading
 
@@ -71,8 +72,10 @@ class connect4():
 	def playTurn(self):
 		move = self.randMove()
 		if self.turnPlayer.position in self.limit:
+			runtime = timeit.timeit(lambda: self.turnPlayer.play(self.getEnv(), move), number=1)
 			time_limit(self.turnPlayer.play, (self.getEnv(),move,), self.time_limits[self.turnPlayer.position-1])
 		else:
+			runtime = timeit.timeit(lambda: self.turnPlayer.play(self.getEnv(), move), number=1)
 			self.turnPlayer.play(self.getEnv(), move)
 		# Move returned as list because lists are mutable
 		move = move[0]

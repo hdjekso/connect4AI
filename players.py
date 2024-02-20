@@ -137,9 +137,11 @@ def weight(window, player, opp):
 	oppCount = np.count_nonzero(window == opp)
 	#print(f"oppCount: {oppCount}")
 	if oppCount == 2 and emptyCount == 2:
-		score -= 6
+		score -= 4
+		#if timeit() is not allowed: score -= 6
 	elif oppCount == 3 and emptyCount == 1:
-		score -= 12
+		#if timeit() is not allowed: score -= 12
+		score -= 8
 	elif oppCount == 4: #connect 4 formed
 		score -= inf
 	
@@ -434,7 +436,7 @@ class minimaxAI(connect4Player):
 		#game over check
 		prevPlayer = self.opponent.position #get the player who made the move that caused the board to become its current state
 		if env.gameOver(col, prevPlayer) or depth == 0:
-			return eval(env.board, self.position, self.opponent.position), dummyBestMove
+			return eval(env.board, self.position, self.opponent.position), dummyBestMove	
 		v = inf
 
 		#get possible next moves
@@ -571,16 +573,16 @@ class alphaBetaAI(connect4Player):
 		#runtime = timeit.timeit(lambda: self.max_value(env_copy, -1, 3, -1, -inf, inf), number=1)
 		#print(f"Runtime: {runtime} seconds")
 		
-		#if np.min(env_copy.topPosition) == 5: #we are making the first move, hardcode center col
-		if env_copy.topPosition[3] == 5: #hardcode center col if it hasn't been played yet
-			#print("first move is ours")
+		if np.min(env_copy.topPosition) == 5: #we are making the first move, hardcode center col
+		#if env_copy.topPosition[3] == 5: #hardcode center col if it hasn't been played yet
 			move[0] = 3
 		else:
-			bestMove = self.max_value(env_copy, -1, 3, -1, -inf, inf)[1]
+			#if timeit() is not allowed: bestMove = self.max_value(env_copy, -1, 3, -1, -inf, inf)[1]
+			bestMove = self.max_value(env_copy, -1, 4, -1, -inf, inf)[1]
 			#print(f"best move obtained: {bestMove}")
 			move[0] = bestMove
 
-class alphaBetaAI2(connect4Player):
+'''class alphaBetaAI2(connect4Player):
 
 	def successor2(self, indices, lastMove):
 		def difference_from_index(element):
@@ -678,7 +680,7 @@ class alphaBetaAI2(connect4Player):
 		else:
 			bestMove = self.max_value(env_copy, -1, 4, -1, -inf, inf)[1]
 			#print(f"best move obtained: {bestMove}")
-			move[0] = bestMove
+			move[0] = bestMove'''
 
 SQUARESIZE = 100
 BLUE = (0,0,255)

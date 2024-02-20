@@ -72,11 +72,11 @@ class connect4():
 	def playTurn(self):
 		move = self.randMove()
 		if self.turnPlayer.position in self.limit:
-			#runtime = timeit.timeit(lambda: self.turnPlayer.play(self.getEnv(), move), number=1)
+			runtime = timeit.timeit(lambda: self.turnPlayer.play(self.getEnv(), move), number=1)
 			time_limit(self.turnPlayer.play, (self.getEnv(),move,), self.time_limits[self.turnPlayer.position-1])
 			#print(f"if Runtime: {runtime} seconds")
 		else:
-			#runtime = timeit.timeit(lambda: self.turnPlayer.play(self.getEnv(), move), number=1)
+			runtime = timeit.timeit(lambda: self.turnPlayer.play(self.getEnv(), move), number=1)
 			self.turnPlayer.play(self.getEnv(), move)
 			#print(f"else Runtime: {runtime} seconds")
 		# Move returned as list because lists are mutable
