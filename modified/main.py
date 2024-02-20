@@ -1,7 +1,7 @@
 import argparse
-from connect4 import connect4
-from players import human2, stupidAI, randomAI, human, minimaxAI, alphaBetaAI#, alphaBetaAI2
-from montecarlo import monteCarloAI
+from modified.connect4 import connect4
+from modified.players import human2, stupidAI, randomAI, human, minimaxAI, alphaBetaAI#, alphaBetaAI2
+from modified.montecarlo import monteCarloAI
 
 parser = argparse.ArgumentParser(description='Run programming assignment 1')
 parser.add_argument('-w', default=6, type=int, help='Rows of game')

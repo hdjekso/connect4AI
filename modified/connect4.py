@@ -5,7 +5,7 @@ import pygame
 import random
 import time
 from threading import Thread
-from thread import KillableThread, thread_with_exception, thread_with_trace
+from modified.thread import KillableThread, thread_with_exception, thread_with_trace
 import multiprocessing
 import signal
 from copy import deepcopy
