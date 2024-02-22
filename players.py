@@ -5,7 +5,7 @@ import math
 import sys
 import numpy as np
 from numpy import inf
-from modified.connect4 import connect4
+from connect4 import connect4
 from copy import deepcopy
 import timeit
 

@@ -1,7 +1,7 @@
 import argparse
-from modified.connect4 import connect4
-from modified.players import human2, stupidAI, randomAI, human, minimaxAI, alphaBetaAI#, alphaBetaAI2
-from modified.montecarlo import monteCarloAI
+from connect4 import connect4
+from players import human2, stupidAI, randomAI, human, minimaxAI, alphaBetaAI
+from montecarlo import monteCarloAI
 
 parser = argparse.ArgumentParser(description='Run programming assignment 1')
 parser.add_argument('-w', default=6, type=int, help='Rows of game')
@@ -35,7 +35,7 @@ for i, v in enumerate(time_limit):
 cvd_mode = bool_dict[args.cvd_mode]
 
 
-agents = {'human': human2, 'humanTxt': human, 'stupidAI': stupidAI, 'randomAI': randomAI, 'monteCarloAI': monteCarloAI, 'minimaxAI': minimaxAI, 'alphaBetaAI': alphaBetaAI}#, 'alphaBetaAI2': alphaBetaAI2}
+agents = {'human': human2, 'humanTxt': human, 'stupidAI': stupidAI, 'randomAI': randomAI, 'monteCarloAI': monteCarloAI, 'minimaxAI': minimaxAI, 'alphaBetaAI': alphaBetaAI}
 
 if __name__ == '__main__':
 	player1 = agents[args.p1](1, seed, cvd_mode)

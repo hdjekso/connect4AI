@@ -2,8 +2,8 @@ import numpy as np
 import random
 import sys
 import signal
-from modified.players import connect4Player
-from modified.connect4 import connect4
+from players import connect4Player
+from connect4 import connect4
 from copy import deepcopy
 
 class monteCarloAI(connect4Player):

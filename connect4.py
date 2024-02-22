@@ -5,7 +5,7 @@ import pygame
 import random
 import time
 from threading import Thread
-from modified.thread import KillableThread, thread_with_exception, thread_with_trace
+from thread import KillableThread, thread_with_exception, thread_with_trace
 import multiprocessing
 import signal
 from copy import deepcopy
@@ -74,11 +74,9 @@ class connect4():
 		if self.turnPlayer.position in self.limit:
 			runtime = timeit.timeit(lambda: self.turnPlayer.play(self.getEnv(), move), number=1)
 			time_limit(self.turnPlayer.play, (self.getEnv(),move,), self.time_limits[self.turnPlayer.position-1])
-			#print(f"if Runtime: {runtime} seconds")
 		else:
 			runtime = timeit.timeit(lambda: self.turnPlayer.play(self.getEnv(), move), number=1)
 			self.turnPlayer.play(self.getEnv(), move)
-			#print(f"else Runtime: {runtime} seconds")
 		# Move returned as list because lists are mutable
 		move = move[0]
 		# Correct illegal move (assign random)
@@ -105,14 +103,12 @@ class connect4():
 		player = self.turnPlayer.position
 		move = self.playTurn()
 		while not self.gameOver(move, player):
-			#print(f"game over check: {move}, {player}")
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					pygame.quit()
 					sys.exit()
 			player = self.turnPlayer.position
 			move = self.playTurn()
-			#time.sleep(5)
 		if self.save:
 			self.saveGame()
 		if self.verbose:
@@ -129,7 +125,7 @@ class connect4():
 					spectating = False
 					break
 
-	def gameOver(self, j, player): #only returns t/f, does not detect 
+	def gameOver(self, j, player):
 		# Find extrema to consider
 		i = self.topPosition[j] + 1
 		minRowIndex = max(j - 3, 0)
@@ -145,7 +141,6 @@ class connect4():
 		count = 0
 		for s in range(minRowIndex, maxRowIndex+1):
 			if self.board[i, s] == player:
-				#print(f"line 141: i = {i}, self.topPosition = {self.topPosition}")
 				count += 1
 			else:
 				count = 0
